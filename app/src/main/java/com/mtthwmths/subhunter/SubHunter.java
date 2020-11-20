@@ -66,6 +66,11 @@ public class SubHunter extends android.app.Activity {
     It will happen when the app is first started and after the player wins a game.
      */
     void newGame(){
+        Random random = new Random();
+        subHorizontalPosition = random.nextInt(gridWidth);
+        subVerticalPosition = random.nextInt(gridHeight);
+        shotsTaken = 0;
+
         Log.d("Debugging","In newGame");
 
     }
