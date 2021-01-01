@@ -107,15 +107,28 @@ public class SubHunter extends android.app.Activity {
         //Change the paint color to black
         paint.setColor(Color.argb(255, 0, 0, 0));
 
-        // Draw the vertical lines of the grid
-        canvas.drawLine(blockSize, 0,
-                blockSize, numberVerticalPixels -1,
-                paint);
+        //this is the original code to learn how to draw grid lines
+        ////Draw the vertical lines of the grid
+        //canvas.drawLine(blockSize, 0,
+        //        blockSize, numberVerticalPixels -1,
+        //        paint);
+        //
+        //// Draw the horizontal lines of the grid
+        //canvas.drawLine(0, blockSize,
+        //        numberHorizontalPixels, blockSize,
+        //        paint);
 
-        // Draw the horizontal lines of the grid
-        canvas.drawLine(0, blockSize,
-                numberHorizontalPixels, blockSize,
-                paint);
+        // Draw the vertical lines of the grid with a for loop
+        for(int i = 0; i < gridWidth; i++){
+            canvas.drawLine(blockSize * i, 0, blockSize * i,
+                    numberVerticalPixels, paint);
+        }
+
+        // Draw the horizontal lines of the grid with a for loop
+        for(int i = 0; i < gridHeight; i++){
+            canvas.drawLine(0, blockSize * i, numberHorizontalPixels,
+                    blockSize * i, paint);
+        }
 
         // Re-size the text appropriate for the
         // score and distance text
