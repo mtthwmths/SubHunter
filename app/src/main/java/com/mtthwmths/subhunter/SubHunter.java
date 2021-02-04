@@ -13,6 +13,7 @@ import android.view.Display;
 import android.util.Log;
 import android.widget.ImageView;
 import java.util.Random;
+import java.util.concurrent.BlockingDeque;
 
 public class SubHunter extends android.app.Activity {
 
@@ -23,8 +24,8 @@ public class SubHunter extends android.app.Activity {
     int blockSize;
     int gridWidth = 40;
     int gridHeight;
-    float horizontalTouched = -100;
-    float verticalTouched = -100;
+    int horizontalTouched = -100;
+    int verticalTouched = -100;
     int subHorizontalPosition;
     int subVerticalPosition;
     boolean hit = false;
@@ -130,6 +131,13 @@ public class SubHunter extends android.app.Activity {
                     blockSize * i, paint);
         }
 
+        // Draw the player's shot
+        canvas.drawRect(horizontalTouched * blockSize,
+                verticalTouched * blockSize,
+                (horizontalTouched * blockSize) + blockSize,
+                (verticalTouched * blockSize) + blockSize,
+                paint );
+
         // Re-size the text appropriate for the
         // score and distance text
         paint.setTextSize(blockSize * 2);
@@ -141,7 +149,10 @@ public class SubHunter extends android.app.Activity {
                 paint);
 
         Log.d("Debugging", "In draw");
-        printDebuggingText();
+        if (debugging) {
+            printDebuggingText();
+        }
+
     }
 
     /*
@@ -150,7 +161,14 @@ public class SubHunter extends android.app.Activity {
     @Override
     public boolean onTouchEvent (MotionEvent motionEvent) {
         Log.d("Debugging", "In onTouchEvent");
-        takeShot();
+        // commented out during chapter 7
+        // takeShot();
+        // Has the player removed their finger from the screen?
+        if((motionEvent.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
+            // Process the player's shot by passing the coordinates of the
+            // player's finger to takeShot
+            takeShot(motionEvent.getX(), motionEvent.getY());
+        }
         return true;
     }
 
@@ -158,14 +176,62 @@ public class SubHunter extends android.app.Activity {
     The code here will execute when the player taps the screen.
     It will calculate the distance from the sub and decide a hit or miss.
      */
+    /*commenting out the old method to rewrite it per chapter 7
     void takeShot () {
         Log.d("Debugging", "In takeShot");
         draw();
 
+    }*/
+    void takeShot (float touchX, float touchY) {
+        Log.d("Debugging", "In takeShot");
+
+        // Add one to the shotsTaken variable
+        shotsTaken++;
+
+        // Convert the float screen coordinates into int grid coordinates
+        horizontalTouched = (int)touchX/ blockSize;
+        verticalTouched = (int)touchY/ blockSize;
+
+        // Did the shot hit the sub?
+        hit = horizontalTouched == subHorizontalPosition
+                && verticalTouched == subVerticalPosition;
+
+        // How far away horizontally and vertically was the shot from the sub
+        int horizontalGap = horizontalTouched - subHorizontalPosition;
+        int verticalGap = verticalTouched - subVerticalPosition;
+
+        // use Pythag to get the distance travelled in a straight line
+        distanceFromSub = (int)Math.sqrt(((horizontalGap * horizontalGap) +
+                (verticalGap * verticalGap)));
+
+        // If there is a it call boom
+        if(hit)
+            boom();
+        // otherwise call draw as usual
+        else draw();
     }
 
     // This code says "BOOM!"
     void boom() {
+        gameView.setImageBitmap(blankBitmap);
+
+        // Wipe the screen with a red color
+        canvas.drawColor(Color.argb(255, 255, 0, 0));
+
+        // Draw some huge white text
+        paint.setColor(Color.argb(255, 255, 255, 255));
+        paint.setTextSize(blockSize * 10);
+
+        canvas.drawText("BOOM!",
+                blockSize * 4, blockSize * 14, paint);
+
+        // Draw some text to prompt restarting
+        paint.setTextSize(blockSize * 2);
+        canvas.drawText("Take a shot to start again",
+                blockSize * 8, blockSize * 18, paint);
+
+        // Start a new game
+        newGame();
 
     }
 
